@@ -1,5 +1,8 @@
 """Question-based retrieval interfaces."""
 
+from src.config import get_settings
+from src.vector_store import get_vector_store
+
 
 def retrieve_documents(question: str) -> list[str]:
     """Retrieve relevant document chunks for a user question.
@@ -10,6 +13,12 @@ def retrieve_documents(question: str) -> list[str]:
     Returns:
         A list of relevant context strings.
 
-    TODO: Implement Chroma similarity search.
     """
-    raise NotImplementedError("Document retrieval is not implemented yet.")
+    if not question.strip():
+        raise ValueError("question must not be empty")
+
+    settings = get_settings()
+    documents = get_vector_store().similarity_search(
+        question.strip(), k=settings.retrieval_top_k
+    )
+    return [document.page_content for document in documents]

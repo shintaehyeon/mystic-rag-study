@@ -1,4 +1,8 @@
-Mystic RAG Prototype sample document.
+Mystic RAG Prototype is a CLI-first question-answering chatbot for text documents.
+The ingestion pipeline loads UTF-8 text files and splits them into overlapping chunks.
 
-This file is a placeholder text document for the first RAG ingestion test.
-Replace or extend this content when implementing the document loading pipeline.
+The project uses Python 3.11, LangChain, LangGraph, OpenAI embeddings, and Chroma.
+Chroma persists document vectors locally so later executions can search the same collection.
+
+Team members work on personal feature branches and open pull requests instead of pushing
+directly to main. API keys belong in a local .env file and must never be committed.

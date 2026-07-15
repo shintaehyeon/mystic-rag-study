@@ -77,11 +77,21 @@ OPENAI_API_KEY=your_real_api_key_here
 
 ## 실행 방법
 
-현재는 실행 진입점만 준비되어 있으며, 실제 RAG 기능은 아직 구현하지 않았습니다.
+RAG 문서 적재 및 검색 스모크 테스트는 다음 명령으로 실행합니다. 처음 실행하면
+샘플 문서의 청크를 출력하고, OpenAI 임베딩으로 Chroma에 저장한 뒤 질문 3개의
+검색 결과를 출력합니다.
 
 ```bash
-python app.py
+python -m scripts.rag_smoke_test
 ```
+
+API 호출 없이 Loader와 Chroma 연결을 자동 테스트하려면 다음 명령을 사용합니다.
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+생성된 `chroma_db/`와 실제 API 키가 들어 있는 `.env`는 Git에서 제외됩니다.
 
 ## Git 협업 규칙
 
