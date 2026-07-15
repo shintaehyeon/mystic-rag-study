@@ -1,0 +1,27 @@
+{
+  "profile": {
+    "display_name": "Shin Taehyeon",
+    "github": "shintaehyeon"
+  },
+  "snapshot": {
+    "captured_at": "2026-07-16",
+    "source": "Codex Profile screenshot",
+    "lifetime_tokens": 450000000,
+    "lifetime_tokens_approximate": true,
+    "peak_task_tokens": 71305000,
+    "longest_task_minutes": 2955,
+    "current_streak_days": 3,
+    "longest_streak_days": 17,
+    "total_tasks": 138
+  },
+  "daily": [
+    {
+      "date": "2026-07-16",
+      "tokens": null,
+      "tasks": null,
+      "commits": null,
+      "tests_passed": 3,
+      "note": "Exact daily token tracking starts from the next recorded Codex usage value."
+    }
+  ]
+}

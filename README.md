@@ -2,6 +2,30 @@
 
 텍스트 문서 기반 RAG QA 챗봇 프로토타입입니다. 이 저장소는 3명이 GitHub에서 동시에 개발을 시작할 수 있도록 최소 프로젝트 구조와 모듈 인터페이스만 제공합니다.
 
+## AI-Assisted Engineering Activity
+
+![AI-Assisted Engineering Activity](activity/dashboard.svg)
+
+이 대시보드는 Codex 사용량을 자랑하기 위한 단순 카운터가 아니라, AI를 활용한
+개발 활동을 검증 가능한 작업·테스트·커밋과 함께 기록하기 위한 포트폴리오 지표입니다.
+공개 데이터에는 날짜별 집계만 포함하며 프롬프트, 대화 내용, API 키는 저장하지
+않습니다. 과거 일별 토큰 수는 추측하지 않고, 정확한 값을 확인한 날부터 기록합니다.
+
+일별 값을 추가하고 SVG를 갱신하는 방법:
+
+```bash
+python activity/generate_dashboard.py \
+  --date 2026-07-17 \
+  --tokens 125000 \
+  --tasks 2 \
+  --commits 1 \
+  --tests-passed 4 \
+  --note "Implemented and tested document retrieval"
+```
+
+이미 기록한 날짜를 다시 입력하면 중복 행을 만들지 않고 해당 날짜를 수정합니다.
+토큰 수는 Codex Profile 또는 CLI `/usage`에서 확인한 값만 입력합니다.
+
 ## 기술 스택
 
 - Python 3.11
