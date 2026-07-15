@@ -4,6 +4,68 @@
 > 목적: 프로젝트를 실행하는 데서 끝나지 않고, 각 단계가 필요한 이유와 코드의 흐름을 이해한다.  
 > 누적 방식: 이후 기능을 공부할 때 이 문서의 다음 장에 계속 추가한다.
 
+## 프로젝트 운영 머리말: 항상 먼저 확인
+
+이 프로젝트는 **팀 코드 작업**과 **개인 학습 기록**을 서로 다른 브랜치와 원격
+저장소로 분리한다. 작업을 시작하거나 push하기 전에 반드시 현재 브랜치와 upstream을
+확인한다.
+
+### 코드 작업 후 팀 저장소에 push
+
+```bash
+git switch feature/rag-ingestion-shintaehyun
+git status
+git diff
+python -m unittest discover -s tests -v
+git add <작업 파일>
+git commit -m "작업 내용"
+git push
+```
+
+- 목적지: `origin/feature/rag-ingestion-shintaehyun`
+- 팀 저장소에는 코드와 테스트만 올린다.
+- `main`에는 직접 push하지 않는다.
+- 개인 학습 리포트는 팀 브랜치에 넣지 않는다.
+
+### 개인 저장소에 코드와 리포트 반영
+
+```bash
+git switch docs/rag-study-report-shintaehyun
+git merge feature/rag-ingestion-shintaehyun
+
+# 공부한 내용을 이 문서에 계속 추가
+git status
+git diff
+python -m unittest discover -s tests -v
+git add docs/rag_study_report.md <개인 저장소에 반영할 파일>
+git commit -m "docs: update RAG study report"
+git push
+```
+
+- 목적지: `personal/main`
+- 개인 저장소에는 구현 코드와 누적 리포트를 함께 보관한다.
+- `.env`, API 키, `chroma_db/`는 어느 저장소에도 올리지 않는다.
+
+### Push 직전 확인 명령
+
+```bash
+git branch --show-current
+git status -sb
+git remote -v
+git branch -vv
+git diff --check
+```
+
+```text
+팀 원격: origin   → jenjemoon/mystic-rag-prototype
+개인 원격: personal → shintaehyeon/mystic-rag-study
+```
+
+이 머리말은 프로젝트의 운영 하네스다. 이후 기능이 늘어나더라도 이 분리 원칙을
+먼저 적용한 다음 작업한다.
+
+---
+
 ## 0. 이번 학습의 최종 목표
 
 이번 작업의 목표는 텍스트 문서를 검색 가능한 형태로 저장한 다음, 사용자의 질문과
@@ -757,4 +819,3 @@ git diff
 - RAG 평가 방법
 - CLI와 Streamlit 통합
 - Pull Request 작성 및 리뷰 방법
-
