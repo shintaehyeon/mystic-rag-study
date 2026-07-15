@@ -93,6 +93,11 @@ python -m unittest discover -s tests -v
 
 생성된 `chroma_db/`와 실제 API 키가 들어 있는 `.env`는 Git에서 제외됩니다.
 
+## 학습 리포트
+
+환경 설정부터 Loader, Chunk, Embedding, Chroma, 검색 테스트까지의 개념과 실습은
+[`docs/rag_study_report.md`](docs/rag_study_report.md)에 누적해서 정리합니다.
+
 ## Git 협업 규칙
 
 - `main` 브랜치는 항상 실행 가능한 기본 상태를 유지합니다.
