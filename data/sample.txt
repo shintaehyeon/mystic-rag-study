@@ -1,0 +1,4 @@
+Mystic RAG Prototype sample document.
+
+This file is a placeholder text document for the first RAG ingestion test.
+Replace or extend this content when implementing the document loading pipeline.

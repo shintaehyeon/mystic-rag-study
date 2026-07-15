@@ -1,0 +1,135 @@
+# mystic-rag-prototype
+
+텍스트 문서 기반 RAG QA 챗봇 프로토타입입니다. 이 저장소는 3명이 GitHub에서 동시에 개발을 시작할 수 있도록 최소 프로젝트 구조와 모듈 인터페이스만 제공합니다.
+
+## 기술 스택
+
+- Python 3.11
+- GEMINI
+- LangChain
+- LangGraph
+- Chroma
+- python-dotenv
+- CLI 우선 실행
+- Streamlit은 추후 선택적으로 추가
+
+## 프로젝트 구조
+
+```text
+mystic-rag-prototype/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── .env.example
+├── app.py
+├── data/
+│   └── sample.txt
+├── src/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── document_loader.py
+│   ├── vector_store.py
+│   ├── retriever.py
+│   ├── llm.py
+│   ├── prompts.py
+│   └── graph.py
+├── tests/
+│   └── test_questions.md
+└── docs/
+    └── architecture.md
+```
+
+## 설치 방법
+
+```bash
+git clone <repository-url>
+cd mystic-rag-prototype
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Windows PowerShell에서는 다음 명령으로 가상환경을 활성화합니다.
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+## 가상환경 생성 방법
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python --version
+```
+
+## 환경변수 설정
+
+```bash
+cp .env.example .env
+```
+
+`.env` 파일에 실제 OpenAI API 키를 입력합니다. `.env`는 Git에 올리지 않습니다.
+
+```env
+OPENAI_API_KEY=your_real_api_key_here
+```
+
+## 실행 방법
+
+현재는 실행 진입점만 준비되어 있으며, 실제 RAG 기능은 아직 구현하지 않았습니다.
+
+```bash
+python app.py
+```
+
+## Git 협업 규칙
+
+- `main` 브랜치는 항상 실행 가능한 기본 상태를 유지합니다.
+- 각자 기능별 브랜치를 생성해서 작업합니다.
+- 브랜치 이름 예시:
+  - `feature/document-loader`
+  - `feature/vector-store`
+  - `feature/qa-graph`
+- Pull Request는 작은 단위로 생성합니다.
+- API 키, 비밀번호, 개인 경로는 커밋하지 않습니다.
+- 공통 인터페이스를 변경할 때는 팀원에게 먼저 공유합니다.
+
+## 역할별 담당 파일
+
+- 문서 처리 담당:
+  - `src/document_loader.py`
+  - `data/sample.txt`
+- 벡터 DB 및 검색 담당:
+  - `src/vector_store.py`
+  - `src/retriever.py`
+- LLM, 프롬프트, 그래프 담당:
+  - `src/llm.py`
+  - `src/prompts.py`
+  - `src/graph.py`
+- 공통 설정 및 실행 진입점:
+  - `src/config.py`
+  - `app.py`
+
+## 모듈 인터페이스
+
+```python
+load_documents(file_path: str) -> list[str]
+split_documents(documents: list[str]) -> list[str]
+build_vector_store(chunks: list[str]) -> None
+retrieve_documents(question: str) -> list[str]
+build_prompt(question: str, contexts: list[str]) -> str
+generate_answer(question: str, contexts: list[str]) -> str
+run_graph(question: str) -> dict
+```
+
+## 향후 구현 계획
+
+1. 텍스트 파일 로딩 및 청크 분할 구현
+2. Chroma 기반 벡터 저장소 생성
+3. 질문 기반 문서 검색 구현
+4. OpenAI API 기반 답변 생성 구현
+5. LangGraph 기반 RAG 플로우 연결
+6. CLI 인터랙션 추가
+7. 테스트 질문 세트 확장
+8. 선택적으로 Streamlit UI 추가
