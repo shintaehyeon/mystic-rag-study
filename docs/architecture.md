@@ -2,7 +2,12 @@
 
 ## Overview
 
-Mystic RAG Prototype is a CLI-first text document QA system. The final workflow will load text documents, split them into chunks, store embeddings in Chroma, retrieve relevant chunks for a question, and generate an answer with an OpenAI chat model.
+Mystic RAG Study is a CLI-first text document QA system. The target workflow loads text
+documents, splits them into chunks, creates embeddings with Gemini, stores them in Chroma,
+retrieves relevant chunks for a question, and supplies that context to a Gemini chat model.
+
+The repository still contains OpenAI-based settings from the initial scaffold. Gemini migration
+is therefore an explicit pending task, not a completed feature.
 
 ## Planned Flow
 
@@ -14,7 +19,7 @@ Text Documents
     -> Chroma Vector Store
     -> Retriever
     -> Prompt Builder
-    -> OpenAI LLM
+    -> Gemini LLM
     -> Answer
 ```
 
@@ -28,6 +33,27 @@ Text Documents
 - `src/llm.py`: Calls the language model and returns generated answers.
 - `src/graph.py`: Connects retrieval and generation with LangGraph.
 - `app.py`: Provides the final CLI entry point.
+
+## Current RAG Scope
+
+The RAG ingestion owner is responsible for the flow through retrieval:
+
+```text
+Document -> Loader -> Chunk -> Embedding -> Chroma -> Retriever
+```
+
+Prompt construction, answer generation, and LangGraph integration belong to the integration
+boundary and are not changed without team agreement.
+
+## Design Decisions
+
+- Documents are split before embedding so retrieval can return a focused passage instead of an
+  entire file.
+- Adjacent chunks overlap so meaning near a chunk boundary is less likely to be lost.
+- Chroma persists vectors locally for repeatable development and search tests.
+- API keys remain in `.env`; only variable names and safe examples belong in Git.
+- Unit tests use fake embeddings where possible, separating deterministic tests from paid API
+  smoke tests.
 
 ## Interface Contract
 

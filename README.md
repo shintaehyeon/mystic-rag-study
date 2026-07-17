@@ -1,6 +1,12 @@
-# mystic-rag-prototype
+# Mystic RAG Study
 
-텍스트 문서 기반 RAG QA 챗봇 프로토타입입니다. 이 저장소는 3명이 GitHub에서 동시에 개발을 시작할 수 있도록 최소 프로젝트 구조와 모듈 인터페이스만 제공합니다.
+텍스트 문서 기반 RAG QA 챗봇을 구현하며 학습 과정과 설계 판단을 함께 기록하는
+개인 공개 저장소입니다. 팀 프로젝트에서 담당한 RAG 문서 적재·검색 코드를 바탕으로
+Loader, Chunk, Embedding, Chroma, Retriever의 동작을 재현하고 설명합니다.
+
+> 팀 협업 코드는 팀 저장소의 개인 기능 브랜치에서 관리하고, 이 저장소에는 같은 코드와
+> 개인 학습 문서만 누적합니다. 팀에서 합의하지 않은 포트폴리오 문서는 팀 저장소에
+> 추가하지 않습니다.
 
 ## AI-Assisted Engineering Activity
 
@@ -29,7 +35,7 @@ python activity/generate_dashboard.py \
 ## 기술 스택
 
 - Python 3.11
-- GEMINI
+- Gemini Embedding (전환 예정)
 - LangChain
 - LangGraph
 - Chroma
@@ -93,17 +99,16 @@ python --version
 cp .env.example .env
 ```
 
-`.env` 파일에 실제 OpenAI API 키를 입력합니다. `.env`는 Git에 올리지 않습니다.
-
-```env
-OPENAI_API_KEY=your_real_api_key_here
-```
+실제 API 키가 들어 있는 `.env`는 Git에 올리지 않습니다. 최종 목표는 Gemini
+Embedding을 사용하는 것이며, 환경변수명과 모델명은 팀 설정을 확정한 뒤
+`.env.example`과 함께 변경합니다. 현재 구현에는 OpenAI 기반 설정이 남아 있어
+Gemini 전환 전 실제 API 실행을 완료한 것으로 간주하지 않습니다.
 
 ## 실행 방법
 
 RAG 문서 적재 및 검색 스모크 테스트는 다음 명령으로 실행합니다. 처음 실행하면
-샘플 문서의 청크를 출력하고, OpenAI 임베딩으로 Chroma에 저장한 뒤 질문 3개의
-검색 결과를 출력합니다.
+샘플 문서의 청크를 출력하고, 임베딩을 Chroma에 저장한 뒤 질문 3개의 검색 결과를
+출력합니다. 현재 실제 API 경로는 Gemini 전환 작업이 필요합니다.
 
 ```bash
 python -m scripts.rag_smoke_test
@@ -121,6 +126,13 @@ python -m unittest discover -s tests -v
 
 환경 설정부터 Loader, Chunk, Embedding, Chroma, 검색 테스트까지의 개념과 실습은
 [`docs/rag_study_report.md`](docs/rag_study_report.md)에 누적해서 정리합니다.
+
+## 프로젝트 문서
+
+- [RAG 아키텍처](docs/architecture.md)
+- [Python 코드 컨벤션](docs/code_convention.md)
+- [Git 작업 규칙](docs/git_workflow.md)
+- [누적 학습 리포트](docs/rag_study_report.md)
 
 ## Git 협업 규칙
 
@@ -167,7 +179,7 @@ run_graph(question: str) -> dict
 1. 텍스트 파일 로딩 및 청크 분할 구현
 2. Chroma 기반 벡터 저장소 생성
 3. 질문 기반 문서 검색 구현
-4. OpenAI API 기반 답변 생성 구현
+4. Gemini API 기반 답변 생성 구현
 5. LangGraph 기반 RAG 플로우 연결
 6. CLI 인터랙션 추가
 7. 테스트 질문 세트 확장
