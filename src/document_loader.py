@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pypdf import PdfReader
 
 
 DEFAULT_CHUNK_SIZE = 500
@@ -10,10 +11,10 @@ DEFAULT_CHUNK_OVERLAP = 50
 
 
 def load_documents(file_path: str) -> list[str]:
-    """Load raw text documents from a file path.
+    """Load a UTF-8 text file or a PDF as raw document strings.
 
     Args:
-        file_path: Path to a text document.
+        file_path: Path to a `.txt` or `.pdf` document.
 
     Returns:
         A list of raw document strings.
@@ -25,10 +26,30 @@ def load_documents(file_path: str) -> list[str]:
     if not path.is_file():
         raise ValueError(f"Document path is not a file: {path}")
 
+    if path.suffix.lower() == ".pdf":
+        return _load_pdf_pages(path)
+    if path.suffix.lower() != ".txt":
+        raise ValueError(f"Unsupported document type: {path.suffix or '(none)'}")
+
     text = path.read_text(encoding="utf-8").strip()
     if not text:
         raise ValueError(f"Document is empty: {path}")
     return [text]
+
+
+def _load_pdf_pages(path: Path) -> list[str]:
+    """Extract non-empty PDF pages and retain their source and page number."""
+    reader = PdfReader(path)
+    pages: list[str] = []
+    for page_number, page in enumerate(reader.pages, start=1):
+        text = (page.extract_text() or "").strip()
+        if text:
+            pages.append(
+                f"[source: {path.name} | page: {page_number}]\n{text}"
+            )
+    if not pages:
+        raise ValueError(f"PDF contains no extractable text: {path}")
+    return pages
 
 
 def split_documents(

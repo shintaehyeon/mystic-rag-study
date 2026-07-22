@@ -69,17 +69,19 @@ python --version
 cp .env.example .env
 ```
 
-`.env` 파일에 실제 OpenAI API 키를 입력합니다. `.env`는 Git에 올리지 않습니다.
+`.env` 파일에 실제 Gemini API 키를 입력합니다. `.env`는 Git에 올리지 않습니다.
 
 ```env
-OPENAI_API_KEY=your_real_api_key_here
+GEMINI_API_KEY=your_real_api_key_here
+GEMINI_EMBEDDING_MODEL=gemini-embedding-2
 ```
 
 ## 실행 방법
 
 RAG 문서 적재 및 검색 스모크 테스트는 다음 명령으로 실행합니다. 처음 실행하면
-샘플 문서의 청크를 출력하고, OpenAI 임베딩으로 Chroma에 저장한 뒤 질문 3개의
-검색 결과를 출력합니다.
+AI컴퓨터전자공학부 편람 PDF의 청크 일부를 출력하고, Gemini 임베딩으로 Chroma에
+저장한 뒤 질문 3개의 검색 결과를 출력합니다. 원본 PDF는 로컬 전용 경로인
+`data/course_catalog/original/`에 준비하며 Git에 커밋하지 않습니다.
 
 ```bash
 python -m scripts.rag_smoke_test
@@ -138,7 +140,7 @@ run_graph(question: str) -> dict
 1. 텍스트 파일 로딩 및 청크 분할 구현
 2. Chroma 기반 벡터 저장소 생성
 3. 질문 기반 문서 검색 구현
-4. OpenAI API 기반 답변 생성 구현
+4. Gemini API 기반 답변 생성 구현
 5. LangGraph 기반 RAG 플로우 연결
 6. CLI 인터랙션 추가
 7. 테스트 질문 세트 확장

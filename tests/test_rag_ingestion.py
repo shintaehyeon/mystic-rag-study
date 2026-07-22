@@ -10,10 +10,32 @@ from langchain_core.embeddings import FakeEmbeddings
 
 from src.document_loader import load_documents, split_documents
 from src.retriever import retrieve_documents
-from src.vector_store import build_vector_store
+from src.vector_store import GeminiEmbeddings, build_vector_store
 
 
 class RagIngestionTest(unittest.TestCase):
+    def test_gemini_embeddings_use_retrieval_specific_inputs(self) -> None:
+        embeddings = GeminiEmbeddings("test-key", "gemini-embedding-2")
+        with patch.object(
+            embeddings,
+            "_post",
+            side_effect=[
+                {"embeddings": [{"values": [0.1, 0.2]}]},
+                {"embedding": {"values": [0.3, 0.4]}},
+            ],
+        ) as post:
+            documents = embeddings.embed_documents(["course catalog text"])
+            query = embeddings.embed_query("4학년 2학기 과목")
+
+        self.assertEqual(documents, [[0.1, 0.2]])
+        self.assertEqual(query, [0.3, 0.4])
+        document_text = post.call_args_list[0].args[1]["requests"][0]["content"][
+            "parts"
+        ][0]["text"]
+        query_text = post.call_args_list[1].args[1]["content"]["parts"][0]["text"]
+        self.assertIn("title: Handong AICE course catalog", document_text)
+        self.assertIn("query: 4학년 2학기 과목", query_text)
+
     def test_load_and_split_documents(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir, "sample.txt")
@@ -34,6 +56,13 @@ class RagIngestionTest(unittest.TestCase):
             path = Path(temp_dir, "empty.txt")
             path.write_text("  \n", encoding="utf-8")
             with self.assertRaises(ValueError):
+                load_documents(str(path))
+
+    def test_unsupported_document_type_raises_clear_error(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir, "sample.csv")
+            path.write_text("course,credit", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Unsupported document type"):
                 load_documents(str(path))
 
     def test_build_and_retrieve_with_persistent_chroma(self) -> None:
