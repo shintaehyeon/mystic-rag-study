@@ -977,3 +977,114 @@ python -m unittest discover -s tests -v
 
 다음 단계에서는 검증 가능한 데이터 출처가 준비되면 OpenTelemetry 또는 구조화된
 Codex 실행 로그에서 일별 합계를 자동으로 갱신하는 방식을 검토한다.
+
+---
+
+## 19. AI컴퓨터전자공학부 편람 PDF와 실제 Gemini 검색
+
+### 19.1 작업 목표
+
+샘플 TXT가 아니라 2026년 AI컴퓨터전자공학부 수강편람 PDF를 실제 데이터로 사용해
+다음 RAG 적재·검색 흐름을 검증했다.
+
+```text
+28페이지 PDF
+  → 페이지별 텍스트 추출
+  → 57개 Chunk 생성
+  → Gemini Embedding 2로 벡터 변환
+  → Chroma 영구 저장
+  → 질문 3개 유사도 검색
+```
+
+최종 자연어 답변 생성과 LangGraph 연결은 다른 담당 영역이므로 구현하지 않았다.
+
+### 19.2 작업 내역
+
+| 파일 | 변경 내용 |
+|---|---|
+| `src/document_loader.py` | TXT와 PDF를 구분하고 PDF를 페이지별로 추출 |
+| `src/config.py` | Gemini 키와 Embedding 모델 설정 추가 |
+| `src/vector_store.py` | Gemini REST API용 LangChain Embedding 어댑터 구현 |
+| `scripts/rag_smoke_test.py` | 실제 편람 적재와 질문 3개 검색 시연 |
+| `tests/test_rag_ingestion.py` | 파일 형식 검사와 Gemini 요청 형식 테스트 |
+| `.gitignore` | 원본 PDF, `.env`, Chroma DB와 임시 렌더링 제외 |
+
+팀 기능 브랜치의 커밋은 `4ec8edd`이며, 팀 `main`이 아닌
+`feature/rag-ingestion-shintaehyun`에 push했다.
+
+### 19.3 용어 정리
+
+- **PDF Loader**: PDF의 각 페이지에서 텍스트를 추출해 프로그램 입력으로 바꾸는
+  구성 요소다.
+- **Metadata**: 본문 외에 출처와 페이지를 설명하는 데이터다. 이번 구현은 각 페이지
+  앞에 파일명과 페이지 번호를 남긴다.
+- **Gemini Embedding 2**: 문서와 질문을 의미 비교가 가능한 숫자 벡터로 변환하는
+  Gemini 모델이다.
+- **REST API**: HTTP 요청과 JSON을 이용해 외부 서비스 기능을 호출하는 방식이다.
+- **Smoke test**: 전체 기능이 최소한의 실제 흐름으로 작동하는지 빠르게 확인하는
+  테스트다.
+
+### 19.4 구조와 코드 설명
+
+`load_documents()`는 확장자가 `.txt`이면 UTF-8 텍스트로 읽고, `.pdf`이면
+`PdfReader`로 페이지를 순회한다. 추출 가능한 텍스트가 있는 페이지만 반환하며 각
+페이지에 `source`와 `page`를 함께 기록한다.
+
+`split_documents()`는 페이지 텍스트를 900자, 150자 overlap 기준으로 나눴다. 표의
+행과 설명이 Chunk 경계에서 완전히 끊기는 가능성을 줄이기 위한 설정이다.
+
+`GeminiEmbeddings`는 LangChain의 `Embeddings` 인터페이스를 구현한다. 문서 Chunk는
+검색 대상 형식으로, 질문은 검색 질의 형식으로 구분해 Gemini API에 전달한다. 반환된
+벡터는 Chroma가 저장하고 코사인 거리 기반 검색에 사용한다.
+
+### 19.5 설계 이유와 선택지
+
+28페이지 PDF 전체를 Gemini에 한 번에 보내지 않고 Python에서 먼저 텍스트를
+추출했다. 이렇게 하면 페이지 출처를 유지하고 검색 단위를 조절할 수 있으며, PDF
+직접 입력 제한에도 의존하지 않는다.
+
+Google SDK 대신 Python 표준 라이브러리의 HTTP 클라이언트로 작은 어댑터를 작성했다.
+프로토타입 의존성을 줄일 수 있지만, 재시도·속도 제한·관측 기능이 필요해지면 공식
+SDK로 교체하는 편이 낫다.
+
+원본 PDF는 저장소에 올리지 않았다. 공개 재배포 가능 여부와 파일 크기를 팀에서 먼저
+합의해야 하며, 저장소에는 공식 다운로드 방법만 기록하는 편이 안전하다.
+
+### 19.6 실제 실행 결과
+
+```text
+Loaded 28 document(s); created 57 chunk(s).
+Saved chunks to the persistent Chroma collection.
+```
+
+질문 3개 모두 관련 Chunk를 반환했다.
+
+1. 4학년 2학기 과목 검색
+2. 머신러닝 선수과목 검색: `Calculus 2`, `선형대수학`
+3. 캡스톤디자인 학점·선수과목 검색
+
+단위 테스트 5개도 통과했다.
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m scripts.rag_smoke_test
+```
+
+### 19.7 오류와 주의점
+
+- 이동된 가상환경의 `activate` 파일에는 이전 절대경로가 남을 수 있다. 이 경우
+  `.venv/bin/python`을 직접 사용하거나 가상환경을 다시 생성한다.
+- `.env.example`에는 변수명만 넣고 실제 Gemini 키는 `.env`에만 저장한다.
+- 문서 저장과 질문 검색은 반드시 호환되는 같은 Embedding 모델을 사용해야 한다.
+- PDF 표는 텍스트 추출 과정에서 셀 구조가 사라질 수 있어 검색 결과의 원문 페이지도
+  함께 확인해야 한다.
+
+### 19.8 복습 질문과 다음 단계
+
+1. PDF를 페이지별로 읽는 이유는 무엇인가?
+2. Chunk overlap이 표와 문맥 보존에 어떤 도움을 주는가?
+3. Embedding 모델이 바뀌면 기존 Chroma 벡터를 다시 생성해야 하는 이유는 무엇인가?
+4. 검색 결과와 최종 생성 답변은 어떻게 다른가?
+
+다음 단계는 팀의 LangGraph·LLM 담당 코드가 검색 결과를 Context로 받아 최종 답변을
+생성하도록 인터페이스를 연결하는 것이다. 이 작업은 담당자와 합의한 뒤 진행한다.

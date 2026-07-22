@@ -35,7 +35,7 @@ python activity/generate_dashboard.py \
 ## 기술 스택
 
 - Python 3.11
-- Gemini Embedding (전환 예정)
+- Gemini Embedding 2
 - LangChain
 - LangGraph
 - Chroma
@@ -99,16 +99,19 @@ python --version
 cp .env.example .env
 ```
 
-실제 API 키가 들어 있는 `.env`는 Git에 올리지 않습니다. 최종 목표는 Gemini
-Embedding을 사용하는 것이며, 환경변수명과 모델명은 팀 설정을 확정한 뒤
-`.env.example`과 함께 변경합니다. 현재 구현에는 OpenAI 기반 설정이 남아 있어
-Gemini 전환 전 실제 API 실행을 완료한 것으로 간주하지 않습니다.
+`.env` 파일에 실제 Gemini API 키를 입력합니다. `.env`는 Git에 올리지 않습니다.
+
+```env
+GEMINI_API_KEY=your_real_api_key_here
+GEMINI_EMBEDDING_MODEL=gemini-embedding-2
+```
 
 ## 실행 방법
 
 RAG 문서 적재 및 검색 스모크 테스트는 다음 명령으로 실행합니다. 처음 실행하면
-샘플 문서의 청크를 출력하고, 임베딩을 Chroma에 저장한 뒤 질문 3개의 검색 결과를
-출력합니다. 현재 실제 API 경로는 Gemini 전환 작업이 필요합니다.
+AI컴퓨터전자공학부 편람 PDF의 청크 일부를 출력하고, Gemini 임베딩으로 Chroma에
+저장한 뒤 질문 3개의 검색 결과를 출력합니다. 원본 PDF는 로컬 전용 경로인
+`data/course_catalog/original/`에 준비하며 Git에 커밋하지 않습니다.
 
 ```bash
 python -m scripts.rag_smoke_test

@@ -1,24 +1,103 @@
-"""Vector store creation and persistence interfaces."""
+"""Gemini embedding and persistent Chroma interfaces."""
 
+import json
 import shutil
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.embeddings import Embeddings
 
 from src.config import get_settings
 
 
-def get_embeddings() -> OpenAIEmbeddings:
-    """Create the configured OpenAI embedding client."""
-    settings = get_settings()
-    if not settings.openai_api_key:
-        raise ValueError(
-            "OPENAI_API_KEY is missing. Copy .env.example to .env and set the key."
+class GeminiEmbeddings(Embeddings):
+    """LangChain embedding adapter for the Gemini Developer API."""
+
+    api_root = "https://generativelanguage.googleapis.com/v1beta"
+
+    def __init__(self, api_key: str, model: str) -> None:
+        self.api_key = api_key
+        self.model = model
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """Embed document chunks in batches for Chroma ingestion."""
+        embeddings: list[list[float]] = []
+        for start in range(0, len(texts), 20):
+            batch = texts[start : start + 20]
+            requests = [
+                {
+                    "model": f"models/{self.model}",
+                    "content": {
+                        "parts": [
+                            {
+                                "text": (
+                                    "task: search result | "
+                                    f"title: Handong AICE course catalog | text: {text}"
+                                )
+                            }
+                        ]
+                    },
+                }
+                for text in batch
+            ]
+            response = self._post(
+                f"models/{self.model}:batchEmbedContents",
+                {"requests": requests},
+            )
+            embeddings.extend(
+                embedding["values"] for embedding in response["embeddings"]
+            )
+        return embeddings
+
+    def embed_query(self, text: str) -> list[float]:
+        """Embed a retrieval query in the same Gemini vector space."""
+        response = self._post(
+            f"models/{self.model}:embedContent",
+            {
+                "model": f"models/{self.model}",
+                "content": {
+                    "parts": [
+                        {"text": f"task: search result | query: {text}"}
+                    ]
+                },
+            },
         )
-    return OpenAIEmbeddings(
-        api_key=settings.openai_api_key,
-        model=settings.openai_embedding_model,
+        return response["embedding"]["values"]
+
+    def _post(self, endpoint: str, payload: dict) -> dict:
+        """Send JSON without exposing the API key in a URL or error message."""
+        request = urllib.request.Request(
+            f"{self.api_root}/{endpoint}",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "x-goog-api-key": self.api_key,
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            raise RuntimeError(
+                f"Gemini embedding request failed with HTTP {error.code}."
+            ) from error
+        except urllib.error.URLError as error:
+            raise RuntimeError("Could not connect to the Gemini embedding API.") from error
+
+
+def get_embeddings() -> Embeddings:
+    """Create the configured Gemini embedding client."""
+    settings = get_settings()
+    if not settings.gemini_api_key:
+        raise ValueError(
+            "GEMINI_API_KEY is missing. Copy .env.example to .env and set the key."
+        )
+    return GeminiEmbeddings(
+        api_key=settings.gemini_api_key,
+        model=settings.gemini_embedding_model,
     )
 
 
