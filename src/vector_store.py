@@ -7,7 +7,7 @@ def build_vector_store(chunks: list[str]) -> None:
     Args:
         chunks: Text chunks to embed and persist.
 
-    TODO: Implement OpenAI embeddings and Chroma persistence.
+    TODO: Implement Gemini embeddings and Chroma persistence.
     """
     raise NotImplementedError("Vector store creation is not implemented yet.")
 
