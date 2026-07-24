@@ -125,6 +125,51 @@ python -m unittest discover -s tests -v
 
 생성된 `chroma_db/`와 실제 API 키가 들어 있는 `.env`는 Git에서 제외됩니다.
 
+## RAG Pipeline과 검색 품질 확인
+
+RAG 데이터는 다음 순서로 처리됩니다.
+
+```text
+PDF 페이지 로딩
+→ 900자 Chunk 분할(150자 overlap)
+→ Gemini Embedding
+→ Chroma 영구 저장
+→ 자연어 질문의 Top-3 관련 Chunk 검색
+```
+
+팀의 LangGraph/LLM 모듈은 다음 인터페이스로 검색 결과를 전달받을 수 있습니다.
+
+```python
+from src.retriever import retrieve_documents
+
+contexts = retrieve_documents("머신러닝 과목의 선수과목은 무엇인가요?")
+```
+
+검색 정확도, Top-k 결과 수, 문서 적재 시간, 질문별 검색 시간을 실제 Gemini API로
+확인하려면 다음 명령을 실행합니다.
+
+```bash
+python -m scripts.rag_evaluation
+```
+
+평가 스크립트는 수강편람에서 확인 가능한 질문 3개의 기대 사실이 Top-3 Chunk 안에
+포함되는지 검사합니다. 문서에 답이 없는 질문도 별도로 실행하지만, 벡터 검색은 항상
+가장 가까운 후보를 반환할 수 있습니다. 따라서 관련성 판단과
+`제공된 문서에서 확인할 수 없습니다`라는 최종 fallback은 LangGraph/LLM 단계에서
+처리해야 합니다.
+
+2026-07-24에 실행한 검색 정확도와 성능 측정 결과는
+[`docs/rag_evaluation.md`](docs/rag_evaluation.md)에서 확인할 수 있습니다.
+
+### RAG 사용 시 주의사항
+
+- 원본 PDF는 `data/course_catalog/original/`에 로컬로 준비하고 Git에 올리지 않습니다.
+- 문서 저장과 질문 검색에는 같은 Embedding 모델을 사용해야 합니다.
+- Embedding 모델을 변경하면 기존 Chroma DB를 다시 만들어야 합니다.
+- PDF 표는 텍스트 추출 중 열 구조가 사라질 수 있으므로 최종 답변에서 원문 페이지를
+  함께 확인하는 것이 안전합니다.
+- 실제 Gemini API 키와 생성된 `chroma_db/`는 커밋하지 않습니다.
+
 ## 학습 리포트
 
 환경 설정부터 Loader, Chunk, Embedding, Chroma, 검색 테스트까지의 개념과 실습은
@@ -133,6 +178,7 @@ python -m unittest discover -s tests -v
 ## 프로젝트 문서
 
 - [RAG 아키텍처](docs/architecture.md)
+- [RAG 검색 평가](docs/rag_evaluation.md)
 - [Python 코드 컨벤션](docs/code_convention.md)
 - [Git 작업 규칙](docs/git_workflow.md)
 - [누적 학습 리포트](docs/rag_study_report.md)

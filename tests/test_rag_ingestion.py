@@ -11,6 +11,7 @@ from langchain_core.embeddings import FakeEmbeddings
 from src.document_loader import load_documents, split_documents
 from src.retriever import retrieve_documents
 from src.vector_store import GeminiEmbeddings, build_vector_store
+from scripts.rag_evaluation import missing_expected_groups, normalize_text
 
 
 class RagIngestionTest(unittest.TestCase):
@@ -87,6 +88,25 @@ class RagIngestionTest(unittest.TestCase):
 
         self.assertEqual(len(results), 2)
         self.assertTrue(all(result in chunks for result in results))
+
+    def test_retrieval_evaluation_matches_whitespace_variants(self) -> None:
+        contexts = [
+            "ECE40087 머신러닝 Calculus2, 선형대수학 3 3 0",
+            "ECE40079 캡스톤디자인 2 캡스톤디자인 1 4 4 0 4",
+        ]
+
+        self.assertEqual(normalize_text("Calculus 2"), "calculus2")
+        self.assertEqual(
+            missing_expected_groups(
+                contexts,
+                (("Calculus 2",), ("선형대수학",), ("캡스톤디자인 1",)),
+            ),
+            [],
+        )
+        self.assertEqual(
+            missing_expected_groups(contexts, (("컴퓨터네트워크",),)),
+            [("컴퓨터네트워크",)],
+        )
 
 
 if __name__ == "__main__":
