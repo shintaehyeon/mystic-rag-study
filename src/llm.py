@@ -4,10 +4,22 @@ from google import genai
 from google.genai import Client
 
 from src.config import require_gemini_api_key
-from src.prompts import build_rag_prompt
+from src.prompts import FALLBACK_ANSWER, build_rag_prompt
 
 
 GEMINI_MODEL_NAME = "gemini-2.5-flash"
+
+
+def normalize_fallback_answer(answer: str) -> str:
+    """Normalize Gemini fallback variants to the project-wide fallback string."""
+    cleaned_answer = answer.strip().strip("\"'")
+    if cleaned_answer == FALLBACK_ANSWER:
+        return FALLBACK_ANSWER
+    if cleaned_answer.startswith("제공된 문서에서") and cleaned_answer.endswith(
+        "확인할 수 없습니다."
+    ):
+        return FALLBACK_ANSWER
+    return answer
 
 
 def get_client() -> Client:
@@ -63,4 +75,4 @@ def generate_answer(question: str, context: str | None = "") -> str:
     if not answer:
         raise RuntimeError("Gemini returned an empty response for the RAG prompt.")
 
-    return answer
+    return normalize_fallback_answer(answer)
