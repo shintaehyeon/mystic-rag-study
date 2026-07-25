@@ -3,6 +3,9 @@ google-genai
 langchain
 langchain-openai
 langchain-community
+langchain-chroma
+langchain-text-splitters
 langgraph
 chromadb
 python-dotenv
+pypdf

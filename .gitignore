@@ -3,6 +3,8 @@
 __pycache__/
 *.pyc
 chroma_db/
+data/course_catalog/original/*.pdf
+tmp/
 .DS_Store
 .idea/
 .vscode/

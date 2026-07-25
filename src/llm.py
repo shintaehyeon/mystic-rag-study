@@ -3,7 +3,7 @@
 from google import genai
 from google.genai import Client
 
-from src.config import get_settings
+from src.config import require_gemini_api_key
 from src.prompts import build_rag_prompt
 
 
@@ -20,8 +20,7 @@ def get_client() -> Client:
         RuntimeError: If the client cannot be initialized.
     """
     try:
-        settings = get_settings()
-        return genai.Client(api_key=settings.gemini_api_key)
+        return genai.Client(api_key=require_gemini_api_key())
     except ValueError:
         raise
     except Exception as exc:
