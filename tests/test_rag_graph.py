@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from src.graph import run_graph
-from src.prompts import FALLBACK_ANSWER, build_context
+from src.prompts import FALLBACK_ANSWER, build_context, build_rag_prompt
 
 
 class RagGraphTest(unittest.TestCase):
@@ -12,6 +12,16 @@ class RagGraphTest(unittest.TestCase):
         context = build_context(["  first chunk  ", "", "second chunk"])
 
         self.assertEqual(context, "[문서 1]\nfirst chunk\n\n[문서 2]\nsecond chunk")
+
+    def test_prompt_tells_llm_not_to_print_context_markers(self) -> None:
+        prompt = build_rag_prompt(
+            "AI개론은 몇 학점인가요?",
+            "[문서 1]\nECE30008 AI개론 3\n\n[문서 2]\nAI개론 3(1)",
+        )
+
+        self.assertIn("[문서 1], [문서 2] 같은 문서 번호를 답변에 출력하지 마세요.", prompt)
+        self.assertIn("Context 원문 전체를 답변에 그대로 복사하지 마세요.", prompt)
+        self.assertIn("검색된 Chunk 원문을 목록처럼 나열하지 마세요.", prompt)
 
     @patch("src.graph.generate_answer")
     @patch("src.graph.retrieve_documents")
@@ -38,6 +48,11 @@ class RagGraphTest(unittest.TestCase):
         self.assertEqual(
             result["answer"],
             "머신러닝 과목의 선수과목은 Calculus 2와 선형대수학입니다.",
+        )
+        self.assertNotIn("[문서", result["answer"])
+        self.assertNotIn(
+            "머신러닝 과목의 선수과목은 Calculus 2, 선형대수학입니다.",
+            result["answer"],
         )
 
     @patch("src.graph.generate_answer")
@@ -74,6 +89,10 @@ class RagGraphTest(unittest.TestCase):
         generate_answer.assert_not_called()
         self.assertEqual(result["documents"], ["  ", ""])
         self.assertEqual(result["context"], "")
+        self.assertEqual(
+            result["answer"],
+            "제공된 문서에서 해당 내용을 확인할 수 없습니다.",
+        )
         self.assertEqual(result["answer"], FALLBACK_ANSWER)
 
 
