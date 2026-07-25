@@ -1,12 +1,27 @@
 """CLI entry point for the Mystic RAG prototype."""
 
+import sys
+
+from src.graph import run_graph
+
 
 def main() -> None:
-    """Print the current project status without calling unfinished features."""
-    print("Mystic RAG Prototype")
-    print("Project scaffold is ready.")
-    print("RAG pipeline features are not implemented yet.")
-    print("Next step: implement modules under src/ by team role.")
+    """Run the RAG QA flow from a command-line question."""
+    question = " ".join(sys.argv[1:]).strip()
+    if not question:
+        question = input("질문을 입력하세요: ").strip()
+
+    if not question:
+        print("질문이 비어 있습니다.")
+        return
+
+    try:
+        result = run_graph(question)
+    except Exception as exc:
+        print(f"오류: {exc}")
+        return
+
+    print(result["answer"])
 
 
 if __name__ == "__main__":
