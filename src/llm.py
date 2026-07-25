@@ -3,11 +3,8 @@
 from google import genai
 from google.genai import Client
 
-from src.config import require_gemini_api_key
+from src.config import get_settings, require_gemini_api_key
 from src.prompts import FALLBACK_ANSWER, build_rag_prompt
-
-
-GEMINI_MODEL_NAME = "gemini-2.5-flash"
 
 
 def normalize_fallback_answer(answer: str) -> str:
@@ -63,7 +60,7 @@ def generate_answer(question: str, context: str | None = "") -> str:
     client = get_client()
     try:
         response = client.models.generate_content(
-            model=GEMINI_MODEL_NAME,
+            model=get_settings().gemini_llm_model,
             contents=prompt,
         )
     except Exception as exc:

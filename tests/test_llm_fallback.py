@@ -9,8 +9,10 @@ from src.llm import generate_answer
 class _FakeModels:
     def __init__(self, text: str) -> None:
         self.text = text
+        self.model = None
 
     def generate_content(self, model: str, contents: str):
+        self.model = model
         return type("Response", (), {"text": self.text})()
 
 
@@ -37,6 +39,10 @@ class LlmFallbackTest(unittest.TestCase):
         self.assertEqual(
             answer,
             "제공된 문서에서 해당 내용을 확인할 수 없습니다.",
+        )
+        self.assertEqual(
+            get_client.return_value.models.model,
+            "gemini-3.6-flash",
         )
 
 
