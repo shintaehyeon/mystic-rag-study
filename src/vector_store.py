@@ -130,9 +130,7 @@ def build_vector_store(chunks: list[str]) -> None:
 
 
 def reset_vector_store() -> None:
-    """Remove local vector store data.
-
-    """
+    """Remove local vector store data."""
     persist_directory = Path(get_settings().chroma_persist_directory)
     resolved_directory = persist_directory.resolve()
     protected_directories = {
